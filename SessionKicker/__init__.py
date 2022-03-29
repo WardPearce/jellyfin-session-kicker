@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 
 from typing import List
+from datetime import datetime, timedelta
 
 try:
     import uvloop
@@ -17,13 +18,22 @@ from .session import Session
 from .env import (
     MEDIA_TYPE_TIME, MAX_WATCH_TIME_IN_SECONDS, ITEM_ON_SESSION_KICKED,
     CHECK_DELAY_IN_SECONDS, JELLYFIN_API_KEY, JELLYFIN_API_URL,
-    ITEM_TYPE_ON_SESSION_KICKED, ITEM_NAME_ON_SESSION_KICKED
+    ITEM_TYPE_ON_SESSION_KICKED, ITEM_NAME_ON_SESSION_KICKED,
+    RESET_AFTER_IN_HOURS
 )
 
 
 class Kicker:
     _http: aiohttp.ClientSession
     _user_sessions = {}
+
+    def __init__(self) -> None:
+        self.__set_next_wipe()
+
+    def __set_next_wipe(self) -> None:
+        self._next_wipe_in = datetime.now() + timedelta(
+            hours=RESET_AFTER_IN_HOURS
+        )
 
     async def _sessions(self) -> List[dict]:
         async with self._http.get("/Sessions") as resp:
@@ -83,4 +93,8 @@ class Kicker:
 
         while True:  # Loop forever
             await self.__check()
+            if RESET_AFTER_IN_HOURS and datetime.now() >= self._next_wipe_in:
+                self.__set_next_wipe()
+                self._user_sessions = {}
+
             await asyncio.sleep(CHECK_DELAY_IN_SECONDS)
