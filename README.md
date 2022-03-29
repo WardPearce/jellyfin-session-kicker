@@ -1,1 +1,1 @@
-# jellyfin-session-timer
+# jellyfin-session-kicker
