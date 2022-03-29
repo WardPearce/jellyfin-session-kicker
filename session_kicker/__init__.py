@@ -22,16 +22,10 @@ MEDIA_TYPE_TIME = os.getenv("MEDIA_TYPE_TIME", "episode").split(",")
 CHECK_DELAY_IN_SECONDS = float(os.getenv("CHECK_DELAY_IN_SECONDS", 10.0))
 MESSAGE_TIME_IN_MILLI = int(os.getenv("MESSAGE_TIME_IN_MILLI", 60000))
 
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-
-# Include [0]["AdditionalUsers"]
-# [0]["NowPlayingItem"]["Type"] == "Episode"
-# [0]["PlayState"]["IsPaused"] is False
 # [0]["UserId"] not in paying_users
-# [0]["LastActivityDate"]
 
 
-class SessionTimer:
+class SessionKicker:
     _http: aiohttp.ClientSession
     _user_sessions = {}
 
@@ -88,6 +82,6 @@ class SessionTimer:
 
 
 try:
-    asyncio.run(SessionTimer().run())
+    asyncio.run(SessionKicker().run())
 except KeyboardInterrupt:
     pass
