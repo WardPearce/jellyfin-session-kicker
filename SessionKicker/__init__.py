@@ -87,7 +87,10 @@ class Kicker:
         self._http = aiohttp.ClientSession(
             base_url=JELLYFIN_API_URL,
             headers={
-                "X-Emby-Authorization": f'MediaBrowser Client="Jellyfin Session Timer", Device="aiohttp", DeviceId="1", Version="0.0.1", Token="{JELLYFIN_API_KEY}"'  # noqa: E501
+                "X-Emby-Authorization": (
+                    'MediaBrowser Client="Jellyfin Session Timer",'
+                    'Device="aiohttp", DeviceId="1", Version="0.0.1"'
+                    f', Token="{JELLYFIN_API_KEY}"')
             },
         )
 
