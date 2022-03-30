@@ -61,9 +61,10 @@ class Kicker:
             if session["PlayState"]["IsPaused"]:
                 continue
 
-            if DB.table("whitelist").count(
-                    where("UserId") == session["UserId"]) > 0:
-                continue
+            async with DB as db:
+                if db.table("whitelist").count(
+                        where("UserId") == session["UserId"]) > 0:
+                    continue
 
             inter = Session(session["Id"], self._http)
 
@@ -102,16 +103,17 @@ class Kicker:
             },
         )
 
-        if not DB.table("misc").all():
-            http_key = secrets.token_urlsafe(40)
-            DB.table("misc").insert({
-                "value": http_key,
-                "type": "key"
-            })
-        else:
-            http_key = DB.table("misc").search(
-                where("type") == "key"  # type: ignore
-            )[0]["value"]
+        async with DB as db:
+            if not db.table("misc").all():
+                http_key = secrets.token_urlsafe(40)
+                db.table("misc").insert({
+                    "value": http_key,
+                    "type": "key"
+                })
+            else:
+                http_key = db.table("misc").search(
+                    where("type") == "key"  # type: ignore
+                )[0]["value"]
 
         logger.debug(f"Your basic auth: {http_key}\n")
 

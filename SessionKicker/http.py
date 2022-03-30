@@ -32,38 +32,41 @@ async def incoming(request: web.BaseRequest):
 
     _, _, given_key = decoded.partition(":")
 
-    # Slow way of validating things, but shouldn't matter.
-    key = DB.table("misc").search(
-        where("type") == "key"  # type: ignore
-    )[0]["value"]
-    if not bcrypt.checkpw(given_key.encode(),
-                          bcrypt.hashpw(key.encode(), bcrypt.gensalt())):
-        return web.json_response({
-            "error": INVALID_AUTH
-        }, status=403)
+    async with DB as db:
+        # Slow way of validating things, but shouldn't matter.
+        key = db.table("misc").search(
+            where("type") == "key"  # type: ignore
+        )[0]["value"]
+        if not bcrypt.checkpw(given_key.encode(),
+                              bcrypt.hashpw(key.encode(), bcrypt.gensalt())):
+            return web.json_response({
+                "error": INVALID_AUTH
+            }, status=403)
 
-    try:
-        json = await request.json()
-    except JSONDecodeError:
-        return web.json_response({
-            "error": "Invalid json payload"
-        }, status=400)
+        try:
+            json = await request.json()
+        except JSONDecodeError:
+            return web.json_response({
+                "error": "Invalid json payload"
+            }, status=400)
 
-    if "UserId" not in json:
-        return web.json_response({
-            "error": "UserId required"
-        })
+        if "UserId" not in json:
+            return web.json_response({
+                "error": "UserId required"
+            })
 
-    if request.method == "POST":
-        DB.table("whitelist").insert({
-            "UserId": json["UserId"]
-        })
-    elif request.method == "DELETE":
-        DB.table("whitelist").remove(where("UserId") == json["UserId"])
-    else:
-        return web.json_response({
-            "error": "Request method not supported"
-        })
+        if request.method == "POST":
+            db.table("whitelist").insert({
+                "UserId": json["UserId"]
+            })
+        elif request.method == "DELETE":
+            db.table("whitelist").remove(
+                where("UserId") == json["UserId"]
+            )
+        else:
+            return web.json_response({
+                "error": "Request method not supported"
+            })
 
     return web.json_response({
         "success": True

@@ -1,4 +1,4 @@
 uvloop
 aiohttp
-tinydb
+aiotinydb
 bcrypt
