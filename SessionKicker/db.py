@@ -1,8 +1,8 @@
 import os
 
-from tinydb import TinyDB
+from aiotinydb import AIOTinyDB
 
 if not os.path.exists("./data"):
     os.mkdir("./data")
 
-DB = TinyDB("./data/session_kicker.json")
+DB = AIOTinyDB("./data/session_kicker.json")
