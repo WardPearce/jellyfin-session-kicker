@@ -19,7 +19,7 @@ from .env import (
     MEDIA_TYPE_TIME, MAX_WATCH_TIME_IN_SECONDS, ITEM_ON_SESSION_KICKED,
     CHECK_DELAY_IN_SECONDS, JELLYFIN_API_KEY, JELLYFIN_API_URL,
     ITEM_TYPE_ON_SESSION_KICKED, ITEM_NAME_ON_SESSION_KICKED,
-    RESET_AFTER_IN_HOURS
+    RESET_AFTER_IN_HOURS, WATCH_TIME_OVER_MSG, NOT_WHITELISTED_MSG
 )
 
 
@@ -58,14 +58,12 @@ class Kicker:
             # Add check to ensure they are whitelisted.
             if session["UserId"] not in self._user_sessions:
                 self._user_sessions[session["UserId"]] = 0
-                asyncio.create_task(inter.send_message(
-                    "You aren't whitelisted for unlimited watch time.",
-                ))
+                asyncio.create_task(inter.send_message(WATCH_TIME_OVER_MSG))
 
             if (self._user_sessions[session["UserId"]]
                     >= MAX_WATCH_TIME_IN_SECONDS):
                 asyncio.gather(
-                    inter.send_message("You have used up your watch time."),
+                    inter.send_message(NOT_WHITELISTED_MSG),
                     inter.playstate("stop") if not ITEM_ON_SESSION_KICKED
                     else inter.view(
                         ITEM_TYPE_ON_SESSION_KICKED,  # type: ignore

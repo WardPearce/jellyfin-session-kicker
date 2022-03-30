@@ -13,6 +13,15 @@ ITEM_ON_SESSION_KICKED = os.getenv("ITEM_ON_SESSION_KICKED", None)
 ITEM_TYPE_ON_SESSION_KICKED = os.getenv("ITEM_TYPE_ON_SESSION_KICKED", None)
 ITEM_NAME_ON_SESSION_KICKED = os.getenv("ITEM_TYPE_ON_SESSION_KICKED", None)
 
+WATCH_TIME_OVER_MSG = os.getenv(
+    "WATCH_TIME_OVER",
+    "You aren't whitelisted for unlimited watch time."
+)
+NOT_WHITELISTED_MSG = os.getenv(
+    "NOT_WHITELISTED",
+    "You have used up your watch time."
+)
+
 # leave as 0 to disable
 RESET_AFTER_IN_HOURS = float(os.getenv("RESET_AFTER_IN_HOURS", 24))
 
