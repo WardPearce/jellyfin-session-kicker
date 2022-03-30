@@ -15,12 +15,10 @@ class Session:
             "TimeoutMs": timeout
         })
 
-    async def view(self, type_: str, id_: str, name: str) -> None:
-        await self._http.post(f"/Sessions/{self._id}/Viewing", json={
-            "itemType": type_,
-            "itemId": id_,
-            "itemName": name
-        })
+    async def play(self, id_: str) -> None:
+        await self._http.post(
+            f"/Sessions/{self._id}/Playing?playCommand=PlayNow&itemIds={id_}"
+        )
 
     async def playstate(self, command: str) -> None:
         await self._http.post(f"/Sessions/{self._id}/Playing/{command}")
