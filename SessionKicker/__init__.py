@@ -1,7 +1,9 @@
 import asyncio
 import aiohttp
 import secrets
+import logging
 
+from sys import stdout
 from tinydb import where
 from typing import List
 from datetime import datetime, timedelta
@@ -25,6 +27,12 @@ from .env import (
     RESET_AFTER_IN_HOURS, WATCH_TIME_OVER_MSG, NOT_WHITELISTED_MSG
 )
 from .db import DB
+
+
+logger = logging.getLogger("session-kicker")
+logger.setLevel(logging.DEBUG)
+consoleHandler = logging.StreamHandler(stdout)
+logger.addHandler(consoleHandler)
 
 
 class Kicker:
@@ -105,7 +113,7 @@ class Kicker:
                 where("type") == "key"  # type: ignore
             )[0]["value"]
 
-        print(f"Your basic auth: {http_key}\n")
+        logger.debug(f"Your basic auth: {http_key}\n")
 
         self._server = await server()
         await self._server.start()

@@ -1,3 +1,8 @@
+import os
+
 from tinydb import TinyDB
 
-DB = TinyDB("session_kicker.json")
+if not os.path.exists("./data"):
+    os.mkdir("./data")
+
+DB = TinyDB("./data/session_kicker.json")

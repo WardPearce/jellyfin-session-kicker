@@ -5,7 +5,7 @@ services:
     image: wardpearce/session-kicker
     restart: unless-stopped
     ports:
-      - "56734:80"
+      - "8887:80"
     environment:
       JELLYFIN_API_KEY: ""
       JELLYFIN_API_URL: ""
@@ -25,10 +25,10 @@ services:
 
       RESET_AFTER_IN_HOURS: 24.0
 
-      HTTP_HOST: "localhost"
+      HTTP_HOST: "session_kicker"
       HTTP_PORT: 80
     volumes:
-      - sessionkickerdata:/session_kicker.json
+      - sessionkickerdata:/data
 
 volumes:
   sessionkickerdata:
