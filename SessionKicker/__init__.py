@@ -1,6 +1,8 @@
 import asyncio
 import aiohttp
+import secrets
 
+from tinydb import where
 from typing import List
 from datetime import datetime, timedelta
 
@@ -15,12 +17,14 @@ else:
         pass
 
 from .session import Session
+from .http import server
 from .env import (
     MEDIA_TYPE_TIME, MAX_WATCH_TIME_IN_SECONDS, ITEM_ON_SESSION_KICKED,
     CHECK_DELAY_IN_SECONDS, JELLYFIN_API_KEY, JELLYFIN_API_URL,
     ITEM_TYPE_ON_SESSION_KICKED, ITEM_NAME_ON_SESSION_KICKED,
     RESET_AFTER_IN_HOURS, WATCH_TIME_OVER_MSG, NOT_WHITELISTED_MSG
 )
+from .db import DB
 
 
 class Kicker:
@@ -53,6 +57,10 @@ class Kicker:
             if session["NowPlayingItem"]["Name"] != "Manhunt":
                 continue
 
+            if DB.table("whitelist").count(
+                    where("UserId") == session["UserId"]) > 0:
+                continue
+
             inter = Session(session["Id"], self._http)
 
             # Add check to ensure they are whitelisted.
@@ -80,6 +88,7 @@ class Kicker:
 
     async def close(self) -> None:
         await self._http.close()
+        await self._server.stop()
 
     async def run(self) -> None:
         self._http = aiohttp.ClientSession(
@@ -91,6 +100,22 @@ class Kicker:
                     f', Token="{JELLYFIN_API_KEY}"')
             },
         )
+
+        if not DB.table("misc").all():
+            http_key = secrets.token_urlsafe(40)
+            DB.table("misc").insert({
+                "value": http_key,
+                "type": "key"
+            })
+        else:
+            http_key = DB.table("misc").search(
+                where("type") == "key"  # type: ignore
+            )[0]["value"]
+
+        print(f"Your basic auth: {http_key}\n")
+
+        self._server = await server()
+        await self._server.start()
 
         while True:  # Loop forever
             await self.__check()
