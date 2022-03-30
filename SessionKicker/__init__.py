@@ -61,6 +61,10 @@ class Kicker:
             if session["PlayState"]["IsPaused"]:
                 continue
 
+            if (ITEM_ON_SESSION_KICKED and ITEM_ON_SESSION_KICKED ==
+                    session["NowPlayingItem"]["Id"]):
+                continue
+
             async with DB as db:
                 if db.table("whitelist").count(
                         where("UserId") == session["UserId"]) > 0:
