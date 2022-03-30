@@ -1,0 +1,35 @@
+version: '3'
+services:
+  session_kicker:
+    container_name: session_kicker
+    image: wardpearce/session-kicker
+    restart: unless-stopped
+    ports:
+      - "56734:80"
+    environment:
+      JELLYFIN_API_KEY: ""
+      JELLYFIN_API_URL: ""
+
+      MEDIA_TYPE_TIME: "episode"
+      CHECK_DELAY_IN_SECONDS: 10.0
+      MESSAGE_TIME_IN_MILLI: 60000
+      MAX_WATCH_TIME_IN_SECONDS: 50.0
+
+      # Leave blank to disable
+      ITEM_ON_SESSION_KICKED: ""
+      ITEM_TYPE_ON_SESSION_KICKED: ""
+      ITEM_NAME_ON_SESSION_KICKED: ""
+
+      WATCH_TIME_OVER_MSG: "You aren't whitelisted for unlimited watch time."
+      NOT_WHITELISTED_MSG: "You have used up your watch time."
+
+      RESET_AFTER_IN_HOURS: 24.0
+
+      HTTP_HOST: "localhost"
+      HTTP_PORT: 80
+    volumes:
+      - sessionkickerdata:/session_kicker.json
+
+volumes:
+  sessionkickerdata:
+    driver: local

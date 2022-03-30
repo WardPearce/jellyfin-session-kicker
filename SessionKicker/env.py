@@ -26,7 +26,7 @@ NOT_WHITELISTED_MSG = os.getenv(
 RESET_AFTER_IN_HOURS = float(os.getenv("RESET_AFTER_IN_HOURS", 24))
 
 HTTP_HOST = os.getenv("HTTP_HOST", "localhost")
-HTTP_PORT = int(os.getenv("HTTP_PORT", 8887))
+HTTP_PORT = int(os.getenv("HTTP_PORT", 80))
 
 assert (
     ITEM_ON_SESSION_KICKED and ITEM_TYPE_ON_SESSION_KICKED
