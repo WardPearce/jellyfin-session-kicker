@@ -16,9 +16,7 @@ services:
       MAX_WATCH_TIME_IN_SECONDS: 50.0
 
       # Leave blank to disable
-      ITEM_ON_SESSION_KICKED: ""
-      ITEM_TYPE_ON_SESSION_KICKED: ""
-      ITEM_NAME_ON_SESSION_KICKED: ""
+      ITEM_ID_ON_SESSION_KICKED: ""
 
       WATCH_TIME_OVER_MSG: "You aren't whitelisted for unlimited watch time."
       NOT_WHITELISTED_MSG: "You have used up your watch time."

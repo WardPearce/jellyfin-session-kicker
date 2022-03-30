@@ -21,10 +21,10 @@ else:
 from .session import Session
 from .http import server
 from .env import (
-    MEDIA_TYPE_TIME, MAX_WATCH_TIME_IN_SECONDS, ITEM_ON_SESSION_KICKED,
+    MEDIA_TYPE_TIME, MAX_WATCH_TIME_IN_SECONDS,
     CHECK_DELAY_IN_SECONDS, JELLYFIN_API_KEY, JELLYFIN_API_URL,
-    ITEM_TYPE_ON_SESSION_KICKED, ITEM_NAME_ON_SESSION_KICKED,
-    RESET_AFTER_IN_HOURS, WATCH_TIME_OVER_MSG, NOT_WHITELISTED_MSG
+    RESET_AFTER_IN_HOURS, WATCH_TIME_OVER_MSG, NOT_WHITELISTED_MSG,
+    ITEM_ID_ON_SESSION_KICKED
 )
 from .db import DB
 
@@ -62,7 +62,7 @@ class Kicker:
                 if session["PlayState"]["IsPaused"]:
                     continue
 
-                if (ITEM_ON_SESSION_KICKED and ITEM_ON_SESSION_KICKED ==
+                if (ITEM_ID_ON_SESSION_KICKED and ITEM_ID_ON_SESSION_KICKED ==
                         session["NowPlayingItem"]["Id"]):
                     continue
 
@@ -83,11 +83,10 @@ class Kicker:
                         >= MAX_WATCH_TIME_IN_SECONDS):
                     asyncio.gather(
                         inter.send_message(NOT_WHITELISTED_MSG),
-                        inter.playstate("stop") if not ITEM_ON_SESSION_KICKED
-                        else inter.view(
-                            ITEM_TYPE_ON_SESSION_KICKED,  # type: ignore
-                            ITEM_ON_SESSION_KICKED,
-                            ITEM_NAME_ON_SESSION_KICKED  # type: ignore
+                        inter.playstate("stop")
+                        if not ITEM_ID_ON_SESSION_KICKED
+                        else inter.play(
+                            ITEM_ID_ON_SESSION_KICKED
                         )
                     )
                     continue
