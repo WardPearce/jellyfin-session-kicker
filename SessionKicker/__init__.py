@@ -52,45 +52,49 @@ class Kicker:
             return await resp.json()
 
     async def __check(self) -> None:
-        for session in await self._sessions():
-            if ("NowPlayingItem" not in session or
-                session["NowPlayingItem"]["Type"].lower()
-                    not in MEDIA_TYPE_TIME):
-                continue
+        async with DB as db:
+            for session in await self._sessions():
+                if ("NowPlayingItem" not in session or
+                    session["NowPlayingItem"]["Type"].lower()
+                        not in MEDIA_TYPE_TIME):
+                    continue
 
-            if session["PlayState"]["IsPaused"]:
-                continue
+                if session["PlayState"]["IsPaused"]:
+                    continue
 
-            if (ITEM_ON_SESSION_KICKED and ITEM_ON_SESSION_KICKED ==
-                    session["NowPlayingItem"]["Id"]):
-                continue
+                if (ITEM_ON_SESSION_KICKED and ITEM_ON_SESSION_KICKED ==
+                        session["NowPlayingItem"]["Id"]):
+                    continue
 
-            async with DB as db:
                 if db.table("whitelist").count(
                         where("UserId") == session["UserId"]) > 0:
                     continue
 
-            inter = Session(session["Id"], self._http)
+                inter = Session(session["Id"], self._http)
 
-            # Add check to ensure they are whitelisted.
-            if session["UserId"] not in self._user_sessions:
-                self._user_sessions[session["UserId"]] = 0
-                asyncio.create_task(inter.send_message(WATCH_TIME_OVER_MSG))
-
-            if (self._user_sessions[session["UserId"]]
-                    >= MAX_WATCH_TIME_IN_SECONDS):
-                asyncio.gather(
-                    inter.send_message(NOT_WHITELISTED_MSG),
-                    inter.playstate("stop") if not ITEM_ON_SESSION_KICKED
-                    else inter.view(
-                        ITEM_TYPE_ON_SESSION_KICKED,  # type: ignore
-                        ITEM_ON_SESSION_KICKED,
-                        ITEM_NAME_ON_SESSION_KICKED  # type: ignore
+                # Add check to ensure they are whitelisted.
+                if session["UserId"] not in self._user_sessions:
+                    self._user_sessions[session["UserId"]] = 0
+                    asyncio.create_task(
+                        inter.send_message(WATCH_TIME_OVER_MSG)
                     )
-                )
-                continue
 
-            self._user_sessions[session["UserId"]] += CHECK_DELAY_IN_SECONDS
+                if (self._user_sessions[session["UserId"]]
+                        >= MAX_WATCH_TIME_IN_SECONDS):
+                    asyncio.gather(
+                        inter.send_message(NOT_WHITELISTED_MSG),
+                        inter.playstate("stop") if not ITEM_ON_SESSION_KICKED
+                        else inter.view(
+                            ITEM_TYPE_ON_SESSION_KICKED,  # type: ignore
+                            ITEM_ON_SESSION_KICKED,
+                            ITEM_NAME_ON_SESSION_KICKED  # type: ignore
+                        )
+                    )
+                    continue
+
+                self._user_sessions[session["UserId"]] += (
+                    CHECK_DELAY_IN_SECONDS
+                )
 
     async def close(self) -> None:
         await self._http.close()
