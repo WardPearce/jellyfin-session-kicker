@@ -53,10 +53,6 @@ class Kicker:
             if session["PlayState"]["IsPaused"]:
                 continue
 
-            # Placeholder for early stage testing
-            if session["NowPlayingItem"]["Name"] != "Manhunt":
-                continue
-
             if DB.table("whitelist").count(
                     where("UserId") == session["UserId"]) > 0:
                 continue
@@ -82,9 +78,6 @@ class Kicker:
                 continue
 
             self._user_sessions[session["UserId"]] += CHECK_DELAY_IN_SECONDS
-
-            print(session["NowPlayingItem"]["Name"])
-            print(self._user_sessions[session["UserId"]])
 
     async def close(self) -> None:
         await self._http.close()
