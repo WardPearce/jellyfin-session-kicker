@@ -3,7 +3,9 @@ This docker image allows you to kick users out of a session after X amount of ti
 
 ## Documentation
 ### Deployment
-TBD
+- Download & configure `docker-compose.yml`
+- `sudo docker-compose build; sudo docker-compose up -d`
+- Proxy exposed port.
 
 ### HTTP Server
 #### Authorization
