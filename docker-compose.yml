@@ -28,7 +28,6 @@ services:
 
       MONGO_DB: "session_timer"
       MONGO_HOST: "session_kicker_mongo"
-      MONGO_PORT: 8886
 
     depends_on:
       - session_kicker_mongo
