@@ -62,9 +62,6 @@ class Kicker:
             if item_type in DONT_KICK_ITEM_TYPE:
                 continue
 
-            if session["NowPlayingItem"]["Name"] != "Manhunt":
-                continue
-
             if session["PlayState"]["IsPaused"]:
                 continue
 
@@ -75,8 +72,6 @@ class Kicker:
             result = await Sessions.db.whitelist.find_one({
                 "UserId": session["UserId"]
             })
-            print(item_type)
-            print(result["MediaTypes"])
             if result and item_type in result["MediaTypes"]:
                 continue
 
