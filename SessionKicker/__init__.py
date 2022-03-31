@@ -81,13 +81,13 @@ class Kicker:
             if session["UserId"] not in self._user_sessions:
                 self._user_sessions[session["UserId"]] = 0
                 asyncio.create_task(
-                    inter.send_message(WATCH_TIME_OVER_MSG)
+                    inter.send_message(NOT_WHITELISTED_MSG)
                 )
 
             if (self._user_sessions[session["UserId"]]
                     >= MAX_WATCH_TIME_IN_SECONDS):
                 asyncio.gather(
-                    inter.send_message(NOT_WHITELISTED_MSG),
+                    inter.send_message(WATCH_TIME_OVER_MSG),
                     inter.playstate("stop")
                     if not ITEM_ID_ON_SESSION_KICKED
                     else inter.play(

@@ -13,11 +13,11 @@ ITEM_ID_ON_SESSION_KICKED = os.getenv("ITEM_ID_ON_SESSION_KICKED", None)
 
 WATCH_TIME_OVER_MSG = os.getenv(
     "WATCH_TIME_OVER",
-    "You aren't whitelisted for unlimited watch time."
+    "You have used up your watch time."
 )
 NOT_WHITELISTED_MSG = os.getenv(
     "NOT_WHITELISTED",
-    "You have used up your watch time."
+    "You aren't whitelisted for unlimited watch time."
 )
 
 # leave as 0 to disable
