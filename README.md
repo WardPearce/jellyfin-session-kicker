@@ -1,7 +1,7 @@
 # Session kicker for Jellyfin
 This docker image allows you to kick users out of a session after X amount of time. Built with a simple HTTP server so integration into different services & scripts should be simple.
 
-### or if you're u/llllllllillllllillll
+### or as u/llllllllillllllillll puts it
 This is useful if you share your server with a bunch of knob heads who use up your monthly internet bandwidth by leaving The Simpsons playing for 12 hours straight
 
 ## Documentation
