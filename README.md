@@ -21,14 +21,14 @@ This is useful if you share your server with a bunch of knob heads who use up yo
 	- Max watch time a user can have in seconds.
 - ITEM_ID_ON_SESSION_KICKED - `Optional`
 	- Default `""`
-	- Item ID to play instead of stopping playback.
+	- Item ID to play instead of stopping playback, leave blank to disable.
 - WATCH_TIME_OVER_MSG - `Optional`
 	- Default `"You aren't whitelisted for unlimited watch time."`
 - NOT_WHITELISTED_MSG - `Optional`
 	- Default `"You have used up your watch time."`
 - RESET_AFTER_IN_HOURS - `Optional`
 	- Default `24`
-	- How many hours should the session cache be reset.
+	- How many hours should the session cache be reset, set as `0` to disable.
 - HTTP_HOST - `Optional`
 - HTTP_PORT - `Optional`
 - MONGO_DB - `Optional`
