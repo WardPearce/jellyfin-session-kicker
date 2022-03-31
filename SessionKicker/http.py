@@ -52,13 +52,13 @@ async def incoming(request: web.BaseRequest):
         if "UserId" not in json or not isinstance(json["UserId"], str):
             return web.json_response({
                 "error": "UserId required"
-            })
+            }, status=400)
 
         if ("MediaTypes" not in json or not
                 isinstance(json["MediaTypes"], list)):
             return web.json_response({
                 "error": "MediaTypes required"
-            })
+            }, status=400)
 
         media_types = [
             media_type.lower()
@@ -92,7 +92,7 @@ async def incoming(request: web.BaseRequest):
     else:
         return web.json_response({
             "error": "Request method not supported"
-        })
+        }, status=405)
 
 
 async def server() -> web.TCPSite:
