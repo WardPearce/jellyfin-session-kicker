@@ -2,12 +2,11 @@ import base64
 import binascii
 import bcrypt
 
-from tinydb import where
 from aiohttp import web
 from json import JSONDecodeError
 
-from .db import DB
 from .env import HTTP_HOST, HTTP_PORT
+from .resources import Sessions
 
 
 INVALID_AUTH = "Invalid basic auth credentials"
@@ -32,17 +31,17 @@ async def incoming(request: web.BaseRequest):
 
     _, _, given_key = decoded.partition(":")
 
-    async with DB as db:
-        # Slow way of validating things, but shouldn't matter.
-        key = db.table("misc").search(
-            where("type") == "key"  # type: ignore
-        )[0]["value"]
-        if not bcrypt.checkpw(given_key.encode(),
-                              bcrypt.hashpw(key.encode(), bcrypt.gensalt())):
-            return web.json_response({
-                "error": INVALID_AUTH
-            }, status=403)
+    result = await Sessions.db.misc.find_one({
+        "type": "key"
+    })
+    if not bcrypt.checkpw(given_key.encode(),
+                          bcrypt.hashpw(result["value"].encode(),
+                                        bcrypt.gensalt())):
+        return web.json_response({
+            "error": INVALID_AUTH
+        }, status=403)
 
+    if request.method in ("POST", "DELETE"):
         try:
             json = await request.json()
         except JSONDecodeError:
@@ -50,27 +49,50 @@ async def incoming(request: web.BaseRequest):
                 "error": "Invalid json payload"
             }, status=400)
 
-        if "UserId" not in json:
+        if "UserId" not in json or not isinstance(json["UserId"], str):
             return web.json_response({
                 "error": "UserId required"
             })
 
-        if request.method == "POST":
-            db.table("whitelist").insert({
-                "UserId": json["UserId"]
-            })
-        elif request.method == "DELETE":
-            db.table("whitelist").remove(
-                where("UserId") == json["UserId"]
-            )
-        else:
+        if ("MediaTypes" not in json or not
+                isinstance(json["MediaTypes"], list)):
             return web.json_response({
-                "error": "Request method not supported"
+                "error": "MediaTypes required"
             })
 
-    return web.json_response({
-        "success": True
-    })
+        media_types = [
+            media_type.lower()
+            for media_type in json["MediaTypes"]
+        ]
+
+        if request.method == "POST":
+            await Sessions.db.whitelist.update_one({
+                "UserId": json["UserId"]
+            }, {
+                "$push": {"MediaTypes": {"$each": media_types}}
+            }, upsert=True)
+        else:
+            await Sessions.db.whitelist.update_one({
+                "UserId": json["UserId"]
+            }, {
+                "$pull": {"MediaTypes": {"$in": media_types}}
+            })
+
+        return web.json_response({
+            "success": True
+        })
+    elif request.method == "GET":
+        result = []
+        async for row in Sessions.db.whitelist.find():
+            result.append({
+                "UserId": row["UserId"],
+                "MediaTypes": row["MediaTypes"]
+            })
+        return web.json_response(result)
+    else:
+        return web.json_response({
+            "error": "Request method not supported"
+        })
 
 
 async def server() -> web.TCPSite:

@@ -4,9 +4,9 @@ import secrets
 import logging
 
 from sys import stdout
-from tinydb import where
 from typing import List
 from datetime import datetime, timedelta
+from motor.motor_asyncio import AsyncIOMotorClient
 
 try:
     import uvloop
@@ -18,15 +18,16 @@ else:
     except Exception:
         pass
 
-from .session import Session
+from .session import JellySession
 from .http import server
 from .env import (
-    MEDIA_TYPE_TIME, MAX_WATCH_TIME_IN_SECONDS,
+    MAX_WATCH_TIME_IN_SECONDS, DONT_KICK_ITEM_TYPE,
     CHECK_DELAY_IN_SECONDS, JELLYFIN_API_KEY, JELLYFIN_API_URL,
     RESET_AFTER_IN_HOURS, WATCH_TIME_OVER_MSG, NOT_WHITELISTED_MSG,
-    ITEM_ID_ON_SESSION_KICKED
+    ITEM_ID_ON_SESSION_KICKED,
+    MONGO_DB, MONGO_HOST, MONGO_PORT
 )
-from .db import DB
+from .resources import Sessions
 
 
 logger = logging.getLogger("session-kicker")
@@ -48,59 +49,68 @@ class Kicker:
         )
 
     async def _sessions(self) -> List[dict]:
-        async with self._http.get("/Sessions") as resp:
+        async with Sessions.http.get("/Sessions") as resp:
             return await resp.json()
 
     async def __check(self) -> None:
-        async with DB as db:
-            for session in await self._sessions():
-                if ("NowPlayingItem" not in session or
-                    session["NowPlayingItem"]["Type"].lower()
-                        not in MEDIA_TYPE_TIME):
-                    continue
+        for session in await self._sessions():
 
-                if session["PlayState"]["IsPaused"]:
-                    continue
+            if "NowPlayingItem" not in session:
+                continue
 
-                if (ITEM_ID_ON_SESSION_KICKED and ITEM_ID_ON_SESSION_KICKED ==
-                        session["NowPlayingItem"]["Id"]):
-                    continue
+            item_type = session["NowPlayingItem"]["Type"].lower()
+            if item_type in DONT_KICK_ITEM_TYPE:
+                continue
 
-                if db.table("whitelist").count(
-                        where("UserId") == session["UserId"]) > 0:
-                    continue
+            if session["NowPlayingItem"]["Name"] != "Manhunt":
+                continue
 
-                inter = Session(session["Id"], self._http)
+            if session["PlayState"]["IsPaused"]:
+                continue
 
-                # Add check to ensure they are whitelisted.
-                if session["UserId"] not in self._user_sessions:
-                    self._user_sessions[session["UserId"]] = 0
-                    asyncio.create_task(
-                        inter.send_message(WATCH_TIME_OVER_MSG)
-                    )
+            if (ITEM_ID_ON_SESSION_KICKED and ITEM_ID_ON_SESSION_KICKED ==
+                    session["NowPlayingItem"]["Id"]):
+                continue
 
-                if (self._user_sessions[session["UserId"]]
-                        >= MAX_WATCH_TIME_IN_SECONDS):
-                    asyncio.gather(
-                        inter.send_message(NOT_WHITELISTED_MSG),
-                        inter.playstate("stop")
-                        if not ITEM_ID_ON_SESSION_KICKED
-                        else inter.play(
-                            ITEM_ID_ON_SESSION_KICKED
-                        )
-                    )
-                    continue
+            result = await Sessions.db.whitelist.find_one({
+                "UserId": session["UserId"]
+            })
+            print(item_type)
+            print(result["MediaTypes"])
+            if result and item_type in result["MediaTypes"]:
+                continue
 
-                self._user_sessions[session["UserId"]] += (
-                    CHECK_DELAY_IN_SECONDS
+            inter = JellySession(session["Id"])
+
+            # Add check to ensure they are whitelisted.
+            if session["UserId"] not in self._user_sessions:
+                self._user_sessions[session["UserId"]] = 0
+                asyncio.create_task(
+                    inter.send_message(WATCH_TIME_OVER_MSG)
                 )
 
+            if (self._user_sessions[session["UserId"]]
+                    >= MAX_WATCH_TIME_IN_SECONDS):
+                asyncio.gather(
+                    inter.send_message(NOT_WHITELISTED_MSG),
+                    inter.playstate("stop")
+                    if not ITEM_ID_ON_SESSION_KICKED
+                    else inter.play(
+                        ITEM_ID_ON_SESSION_KICKED
+                    )
+                )
+                continue
+
+            self._user_sessions[session["UserId"]] += (
+                CHECK_DELAY_IN_SECONDS
+            )
+
     async def close(self) -> None:
-        await self._http.close()
+        await Sessions.http.close()
         await self._server.stop()
 
     async def run(self) -> None:
-        self._http = aiohttp.ClientSession(
+        Sessions.http = aiohttp.ClientSession(
             base_url=JELLYFIN_API_URL,
             headers={
                 "X-Emby-Authorization": (
@@ -110,17 +120,21 @@ class Kicker:
             },
         )
 
-        async with DB as db:
-            if not db.table("misc").all():
-                http_key = secrets.token_urlsafe(40)
-                db.table("misc").insert({
-                    "value": http_key,
-                    "type": "key"
-                })
-            else:
-                http_key = db.table("misc").search(
-                    where("type") == "key"  # type: ignore
-                )[0]["value"]
+        Sessions.db = AsyncIOMotorClient(
+            MONGO_HOST, MONGO_PORT
+        )[MONGO_DB]
+
+        result = await Sessions.db.misc.find_one({
+            "type": "key"
+        })
+        if not result:
+            http_key = secrets.token_urlsafe(40)
+            await Sessions.db.misc.insert_one({
+                "value": http_key,
+                "type": "key"
+            })
+        else:
+            http_key = result["value"]
 
         logger.debug(f"Your basic auth: {http_key}\n")
 
