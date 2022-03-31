@@ -7,9 +7,9 @@ This docker image allows you to kick users out of a session after X amount of ti
 	- API key for Jellyfin
 - JELLYFIN_API_URL - `Required`
 	- API URL for Jellyfin
-- MEDIA_TYPE_TIME - `Optional`
-	- Default `"episode"`
-	- Comma separated list of Item types, should be lowercase.
+- DONT_KICK_ITEM_TYPE - `Optional`
+	- Default `"movie"`
+	- Comma separated list of Item types what shouldn't be tracked, should be lowercase.
 - MESSAGE_TIME_IN_MILLI - `Optional`
 	- Default `60000`
 	- Meant to be how long the message displays for, but Jellyfin doesn't respect it.
@@ -28,6 +28,12 @@ This docker image allows you to kick users out of a session after X amount of ti
 	- How many hours should the session cache be reset.
 - HTTP_HOST - `Optional`
 - HTTP_PORT - `Optional`
+- MONGO_DB - `Optional`
+	- By default `"session_timer"`
+- MONGO_HOST - `Optional`
+	- By default `"localhost"`
+- MONGO_PORT - `Optional`
+	- By default `27017`
 
 ### Deployment
 - Download & configure `docker-compose.yml`
@@ -40,24 +46,40 @@ This docker image allows you to kick users out of a session after X amount of ti
 - Basic Auth credentials are display on initial run.
     - e.g. `Your basic auth: xxxx`
 
-#### Add user to whitelist
+#### Add user to whitelist for Media type.
 - Method - `POST`
 - Authorization - `Basic Auth`
 - Body - `Json`
 ##### Payload
 ```json
 {
-	"UserId": "f521b643f9914b749b9e30bbd06b1792"
+	"UserId": "f521b643f9914b749b9e30bbd06b1792",
+	"MediaTypes": ["episode"]
 }
 ```
 
-#### Remove user from whitelist
+#### Remove user from whitelist for Media type.
 - Method - `DELETE`
 - Authorization - `Basic Auth`
 - Body - `Json`
 ##### Payload
 ```json
 {
-	"UserId": "f521b643f9914b749b9e30bbd06b1792"
+	"UserId": "f521b643f9914b749b9e30bbd06b1792",
+	"MediaTypes": ["episode"]
 }
+```
+#### Get all whitelisted Users.
+- Method - `GET`
+- Authorization - `Basic Auth`
+#### Response
+```json
+[
+	{
+		"UserId": "f521b643f9914b749b9e30bbd06b1792",
+		"MediaTypes": [
+			"episode"
+		]
+	}
+]
 ```
