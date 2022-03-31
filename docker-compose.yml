@@ -18,8 +18,8 @@ services:
       # Leave blank to disable
       ITEM_ID_ON_SESSION_KICKED: ""
 
-      WATCH_TIME_OVER_MSG: "You aren't whitelisted for unlimited watch time."
-      NOT_WHITELISTED_MSG: "You have used up your watch time."
+      WATCH_TIME_OVER_MSG: "You have used up your watch time."
+      NOT_WHITELISTED_MSG: "You aren't whitelisted for unlimited watch time."
 
       RESET_AFTER_IN_HOURS: 24.0
 
