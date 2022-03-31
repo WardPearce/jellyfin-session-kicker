@@ -12,11 +12,11 @@ MAX_WATCH_TIME_IN_SECONDS = float(os.getenv("MAX_WATCH_TIME_IN_SECONDS", 50.0))
 ITEM_ID_ON_SESSION_KICKED = os.getenv("ITEM_ID_ON_SESSION_KICKED", None)
 
 WATCH_TIME_OVER_MSG = os.getenv(
-    "WATCH_TIME_OVER",
+    "WATCH_TIME_OVER_MSG",
     "You have used up your watch time."
 )
 NOT_WHITELISTED_MSG = os.getenv(
-    "NOT_WHITELISTED",
+    "NOT_WHITELISTED_MSG",
     "You aren't whitelisted for unlimited watch time."
 )
 
