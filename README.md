@@ -37,6 +37,9 @@ This is useful if you share your server with a bunch of knob heads who use up yo
 	- By default `"localhost"`
 - MONGO_PORT - `Optional`
 	- By default `27017`
+- DELETE_DEVICE_IF_NO_MEDIA_CONTROLS  - `Optional`
+	- If device doesn't support media controls, nuke the device.
+	- by default `True`
 
 ### Deployment
 - Download & configure `docker-compose.yml`

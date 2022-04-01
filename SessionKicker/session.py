@@ -20,3 +20,9 @@ class JellySession:
 
     async def playstate(self, command: str) -> None:
         await Sessions.http.post(f"/Sessions/{self._id}/Playing/{command}")
+
+    async def stop_encoding(self, device_id: str) -> None:
+        await Sessions.http.delete(
+            (f"/Videos/ActiveEncodings?deviceId={device_id}"
+             f"&playSessionId={self._id}")
+        )
