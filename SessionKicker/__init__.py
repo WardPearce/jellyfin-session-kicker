@@ -1,6 +1,5 @@
 import asyncio
 import aiohttp
-import secrets
 import logging
 
 from sys import stdout
@@ -28,6 +27,7 @@ from .env import (
     MONGO_DB, MONGO_HOST, MONGO_PORT
 )
 from .resources import Sessions
+from .misc import generate_root_key
 
 
 logger = logging.getLogger("session-kicker")
@@ -78,7 +78,6 @@ class Kicker:
 
     async def __check(self) -> None:
         for session in await self._sessions():
-
             if "NowPlayingItem" not in session:
                 continue
 
@@ -144,11 +143,7 @@ class Kicker:
             "type": "key"
         })
         if not result:
-            http_key = secrets.token_urlsafe(40)
-            await Sessions.db.misc.insert_one({
-                "value": http_key,
-                "type": "key"
-            })
+            http_key = await generate_root_key()
         else:
             http_key = result["value"]
 
