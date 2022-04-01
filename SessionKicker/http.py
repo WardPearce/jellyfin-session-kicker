@@ -7,6 +7,7 @@ from json import JSONDecodeError
 
 from .env import HTTP_HOST, HTTP_PORT
 from .resources import Sessions
+from .misc import generate_root_key
 
 
 INVALID_AUTH = "Invalid basic auth credentials"
@@ -89,6 +90,11 @@ async def incoming(request: web.BaseRequest):
                 "MediaTypes": row["MediaTypes"]
             })
         return web.json_response(result)
+    elif request.method == "PATCH":
+        http_key = await generate_root_key()
+        return web.json_response({
+            "key": http_key
+        })
     else:
         return web.json_response({
             "error": "Request method not supported"

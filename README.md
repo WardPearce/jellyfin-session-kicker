@@ -1,6 +1,10 @@
 # Session kicker for Jellyfin
 This docker image allows you to kick users out of a session after X amount of time. Built with a simple HTTP server so integration into different services & scripts should be simple.
 
+
+By default Session kicker will attempt to stop media with commands & stopping encoding. If stop command not support it will delete the device, you can disable this functionality with `DELETE_DEVICE_IF_NO_MEDIA_CONTROLS`.
+
+
 ### or as u/llllllllillllllillll puts it
 This is useful if you share your server with a bunch of knob heads who use up your monthly internet bandwidth by leaving The Simpsons playing for 12 hours straight
 
@@ -78,7 +82,7 @@ This is useful if you share your server with a bunch of knob heads who use up yo
 #### Get all whitelisted Users.
 - Method - `GET`
 - Authorization - `Basic Auth`
-#### Response
+##### Response
 ```json
 [
 	{
@@ -88,4 +92,14 @@ This is useful if you share your server with a bunch of knob heads who use up yo
 		]
 	}
 ]
+```
+#### Reset HTTP Key
+- Method - `PATCH`
+- Authorization - `Basic Auth`
+
+##### Response
+```json
+{
+	"key": "d8C9ORsEzjSlUFJx8GMl8VClDmzcRLE_5B5B79Jz0QTtycw0EypqSw"
+}
 ```
