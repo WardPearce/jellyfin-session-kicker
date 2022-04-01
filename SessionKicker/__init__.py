@@ -59,6 +59,8 @@ class Kicker:
 
         if (not session["Capabilities"]["SupportsMediaControl"]
                 and DELETE_DEVICE_IF_NO_MEDIA_CONTROLS):
+            # If media controls not supported, nuke the
+            # device as a last resort.
             await Sessions.http.delete(
                 f"/Devices?id={session['DeviceId']}"
             )
