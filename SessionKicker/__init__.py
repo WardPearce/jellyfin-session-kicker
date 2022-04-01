@@ -86,14 +86,18 @@ class Kicker:
 
             if (self._user_sessions[session["UserId"]]
                     >= MAX_WATCH_TIME_IN_SECONDS):
-                asyncio.gather(
+                tasks = [
                     inter.send_message(WATCH_TIME_OVER_MSG),
-                    inter.playstate("stop")
-                    if not ITEM_ID_ON_SESSION_KICKED
-                    else inter.play(
-                        ITEM_ID_ON_SESSION_KICKED
+                    inter.playstate("stop"),
+                ]
+                if ITEM_ID_ON_SESSION_KICKED:
+                    tasks.append(
+                        inter.play(
+                            ITEM_ID_ON_SESSION_KICKED
+                        )
                     )
-                )
+
+                asyncio.gather(*tasks)
                 continue
 
             self._user_sessions[session["UserId"]] += (
