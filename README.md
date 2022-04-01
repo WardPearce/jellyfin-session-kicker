@@ -82,7 +82,7 @@ This is useful if you share your server with a bunch of knob heads who use up yo
 #### Get all whitelisted Users.
 - Method - `GET`
 - Authorization - `Basic Auth`
-#### Response
+##### Response
 ```json
 [
 	{
@@ -92,4 +92,14 @@ This is useful if you share your server with a bunch of knob heads who use up yo
 		]
 	}
 ]
+```
+#### Reset HTTP Key
+- Method - `PATCH`
+- Authorization - `Basic Auth`
+
+##### Response
+```json
+{
+	"key": "d8C9ORsEzjSlUFJx8GMl8VClDmzcRLE_5B5B79Jz0QTtycw0EypqSw"
+}
 ```
