@@ -24,7 +24,7 @@ from .env import (
     MAX_WATCH_TIME_IN_SECONDS, DONT_KICK_ITEM_TYPE,
     CHECK_DELAY_IN_SECONDS, JELLYFIN_API_KEY, JELLYFIN_API_URL,
     RESET_AFTER_IN_HOURS, WATCH_TIME_OVER_MSG, NOT_WHITELISTED_MSG,
-    ITEM_ID_ON_SESSION_KICKED,
+    ITEM_ID_ON_SESSION_KICKED, DELETE_DEVICE_IF_NO_MEDIA_CONTROLS,
     MONGO_DB, MONGO_HOST, MONGO_PORT
 )
 from .resources import Sessions
@@ -51,6 +51,30 @@ class Kicker:
     async def _sessions(self) -> List[dict]:
         async with Sessions.http.get("/Sessions") as resp:
             return await resp.json()
+
+    async def __stop_then_media(self, inter: JellySession,
+                                session: dict) -> None:
+        if "DisplayMessage" in session["Capabilities"]["SupportedCommands"]:
+            await inter.send_message(WATCH_TIME_OVER_MSG)
+
+        if (not session["Capabilities"]["SupportsMediaControl"]
+                and DELETE_DEVICE_IF_NO_MEDIA_CONTROLS):
+            # If media controls not supported, nuke the
+            # device as a last resort.
+            await Sessions.http.delete(
+                f"/Devices?id={session['DeviceId']}"
+            )
+        else:
+            await inter.playstate("stop")
+            # Attempt to force stop encoding the video
+            # for the session, as a backup for the stop command.
+            await inter.stop_encoding(session["DeviceId"])
+
+            if ITEM_ID_ON_SESSION_KICKED:
+                await asyncio.sleep(2)
+                await inter.play(
+                    ITEM_ID_ON_SESSION_KICKED
+                )
 
     async def __check(self) -> None:
         for session in await self._sessions():
@@ -86,18 +110,11 @@ class Kicker:
 
             if (self._user_sessions[session["UserId"]]
                     >= MAX_WATCH_TIME_IN_SECONDS):
-                tasks = [
-                    inter.send_message(WATCH_TIME_OVER_MSG),
-                    inter.playstate("stop"),
-                ]
-                if ITEM_ID_ON_SESSION_KICKED:
-                    tasks.append(
-                        inter.play(
-                            ITEM_ID_ON_SESSION_KICKED
-                        )
+                asyncio.create_task(
+                    self.__stop_then_media(
+                        inter, session
                     )
-
-                asyncio.gather(*tasks)
+                )
                 continue
 
             self._user_sessions[session["UserId"]] += (
