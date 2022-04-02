@@ -92,10 +92,11 @@ class Kicker:
                     session["NowPlayingItem"]["Id"]):
                 continue
 
-            result = await Sessions.db.whitelist.find_one({
-                "UserId": session["UserId"]
+            count = await Sessions.db.whitelist.count_documents({
+                "UserId": session["UserId"],
+                "MediaTypes": item_type
             })
-            if result and item_type in result["MediaTypes"]:
+            if count > 0:
                 continue
 
             inter = JellySession(session["Id"])
