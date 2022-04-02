@@ -70,7 +70,7 @@ async def incoming(request: web.BaseRequest):
             await Sessions.db.whitelist.update_one({
                 "UserId": json["UserId"]
             }, {
-                "$push": {"MediaTypes": {"$each": media_types}}
+                "$addToSet": {"MediaTypes": {"$each": media_types}}
             }, upsert=True)
         else:
             await Sessions.db.whitelist.update_one({
