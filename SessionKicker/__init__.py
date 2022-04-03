@@ -6,6 +6,7 @@ from sys import stdout
 from typing import List
 from datetime import datetime, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
+from json import JSONDecodeError
 
 try:
     import uvloop
@@ -50,7 +51,15 @@ class Kicker:
 
     async def _sessions(self) -> List[dict]:
         async with Sessions.http.get("/Sessions") as resp:
-            return await resp.json()
+            try:
+                return await resp.json()
+            except (JSONDecodeError, aiohttp.ContentTypeError):
+                logger.warn((
+                    "Jellyfin didn't respond with json"
+                    ", most likely your `JELLYFIN_API_KEY`"
+                    " or `JELLYFIN_API_URL` is incorrect"
+                ))
+                return []
 
     async def __stop_then_media(self, inter: JellySession,
                                 session: dict) -> None:
