@@ -62,7 +62,8 @@ async def incoming(request: web.BaseRequest):
             }, status=400)
 
         media_types = [
-            media_type.strip().lower()
+            media_type.strip().lower() if isinstance(media_type, str)
+            else str(media_type)
             for media_type in json["MediaTypes"]
         ]
 
