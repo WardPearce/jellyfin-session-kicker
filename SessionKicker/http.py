@@ -62,19 +62,19 @@ async def incoming(request: web.BaseRequest):
             }, status=400)
 
         media_types = [
-            media_type.lower()
+            media_type.strip().lower()
             for media_type in json["MediaTypes"]
         ]
 
         if request.method == "POST":
             await Sessions.db.whitelist.update_one({
-                "UserId": json["UserId"]
+                "UserId": json["UserId"].strip()
             }, {
                 "$addToSet": {"MediaTypes": {"$each": media_types}}
             }, upsert=True)
         else:
             await Sessions.db.whitelist.update_one({
-                "UserId": json["UserId"]
+                "UserId": json["UserId"].strip()
             }, {
                 "$pull": {"MediaTypes": {"$in": media_types}}
             })
