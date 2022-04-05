@@ -51,22 +51,24 @@ class Kicker:
 
     async def _sessions(self) -> List[dict]:
         async with Sessions.http.get("/Sessions") as resp:
-            try:
-                return await resp.json()
-            except (JSONDecodeError, aiohttp.ContentTypeError):
-                logger.warn((
-                    "Jellyfin didn't respond with json"
-                    ", most likely your `JELLYFIN_API_KEY`"
-                    " or `JELLYFIN_API_URL` is incorrect"
-                ))
-                return []
+            if resp.status == 200:
+                try:
+                    return await resp.json()
+                except (JSONDecodeError, aiohttp.ContentTypeError):
+                    logger.warn((
+                        "Jellyfin didn't respond with json"
+                        ", most likely your `JELLYFIN_API_KEY`"
+                        " or `JELLYFIN_API_URL` is incorrect"
+                    ))
+
+            return []
 
     async def __stop_then_media(self, inter: JellySession,
                                 session: dict) -> None:
-        if "DisplayMessage" in session["Capabilities"]["SupportedCommands"]:
+        if "DisplayMessage" in session["SupportedCommands"]:
             await inter.send_message(WATCH_TIME_OVER_MSG)
 
-        if (not session["Capabilities"]["SupportsMediaControl"]
+        if (not session["SupportsMediaControl"]
                 and DELETE_DEVICE_IF_NO_MEDIA_CONTROLS):
             # If media controls not supported, nuke the
             # device as a last resort.
@@ -79,7 +81,8 @@ class Kicker:
             # for the session, as a backup for the stop command.
             await inter.stop_encoding(session["DeviceId"])
 
-            if ITEM_ID_ON_SESSION_KICKED:
+            if (ITEM_ID_ON_SESSION_KICKED and "PlayMediaSource" in
+                    session["SupportedCommands"]):
                 await asyncio.sleep(2)
                 await inter.play(
                     ITEM_ID_ON_SESSION_KICKED
@@ -113,9 +116,10 @@ class Kicker:
             # Add check to ensure they are whitelisted.
             if session["UserId"] not in self._user_sessions:
                 self._user_sessions[session["UserId"]] = 0
-                asyncio.create_task(
-                    inter.send_message(NOT_WHITELISTED_MSG)
-                )
+                if "DisplayMessage" in session["SupportedCommands"]:
+                    asyncio.create_task(
+                        inter.send_message(NOT_WHITELISTED_MSG)
+                    )
 
             if (self._user_sessions[session["UserId"]]
                     >= MAX_WATCH_TIME_IN_SECONDS):
