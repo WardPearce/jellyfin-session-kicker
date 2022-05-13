@@ -113,7 +113,6 @@ class Kicker:
 
             inter = JellySession(session["Id"])
 
-            # Add check to ensure they are whitelisted.
             if session["UserId"] not in self._user_sessions:
                 self._user_sessions[session["UserId"]] = 0
                 if "DisplayMessage" in session["SupportedCommands"]:
