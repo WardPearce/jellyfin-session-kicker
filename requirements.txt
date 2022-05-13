@@ -1,4 +1,0 @@
-uvloop
-aiohttp
-motor
-bcrypt
