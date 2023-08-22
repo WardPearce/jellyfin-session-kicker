@@ -10,8 +10,8 @@ MAX_WATCH_TIME_IN_SECONDS = float(os.getenv("MAX_WATCH_TIME_IN_SECONDS", 50.0))
 DELETE_DEVICE_IF_NO_MEDIA_CONTROLS = bool(
     os.getenv("DELETE_DEVICE_IF_NO_MEDIA_CONTROLS", "True").lower() == "true"
 )
-KICK_BY_DEVICE_INSTEAD_OF_USER = bool(
-    os.getenv("KICK_BY_DEVICE_INSTEAD_OF_USER", "False").lower() == "true"
+ACCRUE_BY_DEVICE_INSTEAD_OF_USER = bool(
+    os.getenv("ACCRUE_BY_DEVICE_INSTEAD_OF_USER", "False").lower() == "true"
 )
 
 # Blank to disable

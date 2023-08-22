@@ -25,7 +25,7 @@ from .env import (
     CHECK_DELAY_IN_SECONDS, JELLYFIN_API_KEY, JELLYFIN_API_URL,
     RESET_AFTER_IN_HOURS, WATCH_TIME_OVER_MSG, NOT_WHITELISTED_MSG,
     ITEM_ID_ON_SESSION_KICKED, DELETE_DEVICE_IF_NO_MEDIA_CONTROLS,
-    KICK_BY_DEVICE_INSTEAD_OF_USER, MONGO_DB, MONGO_HOST, MONGO_PORT
+    ACCRUE_BY_DEVICE_INSTEAD_OF_USER, MONGO_DB, MONGO_HOST, MONGO_PORT
 )
 from .resources import Sessions
 from .misc import generate_root_key
@@ -40,7 +40,7 @@ logger.addHandler(consoleHandler)
 class Kicker:
     _http: aiohttp.ClientSession
     _user_sessions = {}
-    _id_type = "DeviceId" if KICK_BY_DEVICE_INSTEAD_OF_USER else "UserId"
+    _id_type = "DeviceId" if ACCRUE_BY_DEVICE_INSTEAD_OF_USER else "UserId"
 
     def __init__(self) -> None:
         self.__set_next_wipe()
