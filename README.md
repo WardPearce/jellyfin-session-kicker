@@ -44,7 +44,7 @@ This is useful if you share your server with a bunch of knob heads who use up yo
 - DELETE_DEVICE_IF_NO_MEDIA_CONTROLS  - `Optional`
 	- If device doesn't support media controls, nuke the device.
 	- by default `True`
-- KICK_BY_DEVICE_INSTEAD_OF_USER  - `Optional`
+- ACCRUE_BY_DEVICE_INSTEAD_OF_USER  - `Optional`
 	- Accrue time per device rather than per user
 	- by default `False`
 
