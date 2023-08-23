@@ -25,7 +25,7 @@ from .env import (
     CHECK_DELAY_IN_SECONDS, JELLYFIN_API_KEY, JELLYFIN_API_URL,
     RESET_AFTER_IN_HOURS, WATCH_TIME_OVER_MSG, NOT_WHITELISTED_MSG,
     ITEM_ID_ON_SESSION_KICKED, DELETE_DEVICE_IF_NO_MEDIA_CONTROLS,
-    MONGO_DB, MONGO_HOST, MONGO_PORT
+    ACCRUE_BY_DEVICE_INSTEAD_OF_USER, MONGO_DB, MONGO_HOST, MONGO_PORT
 )
 from .resources import Sessions
 from .misc import generate_root_key
@@ -40,6 +40,7 @@ logger.addHandler(consoleHandler)
 class Kicker:
     _http: aiohttp.ClientSession
     _user_sessions = {}
+    _id_type = "DeviceId" if ACCRUE_BY_DEVICE_INSTEAD_OF_USER else "UserId"
 
     def __init__(self) -> None:
         self.__set_next_wipe()
@@ -105,7 +106,7 @@ class Kicker:
                 continue
 
             count = await Sessions.db.whitelist.count_documents({
-                "UserId": session["UserId"],
+                self._id_type: session[self._id_type],
                 "MediaTypes": item_type
             })
             if count > 0:
@@ -113,15 +114,14 @@ class Kicker:
 
             inter = JellySession(session["Id"])
 
-            # Add check to ensure they are whitelisted.
-            if session["UserId"] not in self._user_sessions:
-                self._user_sessions[session["UserId"]] = 0
+            if session[self._id_type] not in self._user_sessions:
+                self._user_sessions[session[self._id_type]] = 0
                 if "DisplayMessage" in session["SupportedCommands"]:
                     asyncio.create_task(
                         inter.send_message(NOT_WHITELISTED_MSG)
                     )
 
-            if (self._user_sessions[session["UserId"]]
+            if (self._user_sessions[session[self._id_type]]
                     >= MAX_WATCH_TIME_IN_SECONDS):
                 asyncio.create_task(
                     self.__stop_then_media(
@@ -130,7 +130,7 @@ class Kicker:
                 )
                 continue
 
-            self._user_sessions[session["UserId"]] += (
+            self._user_sessions[session[self._id_type]] += (
                 CHECK_DELAY_IN_SECONDS
             )
 
