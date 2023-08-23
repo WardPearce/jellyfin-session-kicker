@@ -1,7 +1,7 @@
 import aiohttp
-from motor.motor_asyncio import AsyncIOMotorCollection
+from motor import motor_asyncio
 
 
 class Sessions:
     http: aiohttp.ClientSession
-    db: AsyncIOMotorCollection
+    db: motor_asyncio.AsyncIOMotorDatabase
